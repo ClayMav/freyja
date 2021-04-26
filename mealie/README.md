@@ -1,0 +1,4 @@
+# Mealie
+
+Required directories:
++ data
