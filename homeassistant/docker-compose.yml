@@ -1,0 +1,31 @@
+version: '3'
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: homeassistant/home-assistant:stable
+    ports:
+      - "8123:8123"
+    networks:
+      - proxy
+    volumes:
+      - './data:/config'
+      - '/etc/localtime:/etc/localtime:ro'
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homeassistant.entrypoints=http"
+      - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.clay.sh`)"
+      - "traefik.http.middlewares.homeassistant-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.homeassistant.middlewares=homeassistant-https-redirect"
+      - "traefik.http.routers.homeassistant-secure.entrypoints=https"
+      - "traefik.http.routers.homeassistant-secure.rule=Host(`homeassistant.clay.sh`)"
+      - "traefik.http.routers.homeassistant-secure.tls=true"
+      - "traefik.http.routers.homeassistant-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.homeassistant-secure.tls.domains[0].main=homeassistant.clay.sh"
+      - "traefik.http.routers.homeassistant-secure.service=homeassistant"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external: true
